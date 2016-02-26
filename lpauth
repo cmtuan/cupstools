@@ -1,0 +1,81 @@
+#!/usr/bin/env python
+
+import cups
+import getpass
+import getopt
+import sys
+
+# require at least 1.9.47 for authenticateJob().
+cups.require("1.9.47")
+
+#
+# arguments: 
+# username: the user name for authentication
+# host: the cups server name
+# 
+# this will ask for a password, get the list of jobs,
+# and run authenticateJob over the list of jobs.
+#
+def lpauth(username, host):
+
+    cups.setServer(host)
+  
+    try:
+      conn = cups.Connection()
+    except:
+        print "Cannot connect to server", host
+        sys.exit(1)
+
+    # this can throw getpass.GetPassWarning exception when 
+    # password input may be echoed. not sure what to do with the
+    # exception however, so just pass...
+
+    try:
+        passwd = getpass.getpass()
+    except:
+        pass
+  
+    try:
+        jobs = conn.getJobs(my_jobs=True)
+    except:
+        print "Cannot get jobs from", host
+        sys.exit(1)
+  
+    for job in jobs:
+        print "Authenticating job:", job
+        try:
+            conn.authenticateJob(job, [username, passwd])
+        except cups.IPPError as (status, description) : 
+            print 'Error! status=%d. %s' % (status, description)
+
+def usage():
+    print sys.argv[0]
+    print "-h          help"
+    print "-H, --host= hostname  Default to localhost"
+    print "-u, --user= username  Default to current userid"
+    sys.exit(1)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hH:u:", ["help", "host=", "user="])
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+
+    # default the username to the current user and
+    # cups server to localhost
+    username=getpass.getuser()
+    host="localhost"
+
+    for opt, arg in opts:
+        if opt in ("-u", "--user"):
+            username = arg
+        elif opt in ("-H", "--host"):
+            host = arg
+        else:
+            usage()
+       
+    lpauth(username, host) 
+
+if __name__ == '__main__':
+    main()

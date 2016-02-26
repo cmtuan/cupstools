@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+import cups
+import getopt
+import sys
+
+def lpGetInfo(host):
+
+    cups.setServer(host)
+  
+    cups.setEncryption(cups.HTTP_ENCRYPT_IF_REQUESTED)
+
+    try:
+      conn = cups.Connection()
+    except:
+        print "Cannot connect to server", host
+        sys.exit(1)
+
+    print "Getting printers:"
+    try:
+        printers = conn.getPrinters()
+        for printer in printers:
+            print printer
+    except:
+        print "Cannot get a list of printer from", host
+
+    print "Getting jobs:"
+    try:
+        jobs = conn.getJobs(my_jobs=True)
+        for job in jobs:
+            print job, jobs[job]
+    except:
+        print "Cannot get jobs from", host
+  
+def usage():
+    print sys.argv[0]
+    print "-h          help"
+    print "-H, --host= hostname  Default to localhost"
+    sys.exit(1)
+
+def main():
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hH:", ["help", "host="])
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+
+
+    host="localhost"
+
+    for opt, arg in opts:
+        if opt in ("-H", "--host"):
+            host = arg
+        else:
+            usage()
+       
+    lpGetInfo(host) 
+
+if __name__ == '__main__':
+    main()
