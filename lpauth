@@ -19,7 +19,8 @@ cups.require("1.9.47")
 def lpauth(username, host):
 
     cups.setServer(host)
-  
+    cups.setUser(username)
+
     try:
       conn = cups.Connection()
     except:
