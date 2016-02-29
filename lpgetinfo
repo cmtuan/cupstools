@@ -2,12 +2,14 @@
 
 import cups
 import getopt
+import getpass
 import sys
 
-def lpGetInfo(host):
+def lpGetInfo(username, host):
 
     cups.setServer(host)
-  
+    cups.setUser(username)
+
     cups.setEncryption(cups.HTTP_ENCRYPT_IF_REQUESTED)
 
     try:
@@ -36,25 +38,29 @@ def usage():
     print sys.argv[0]
     print "-h          help"
     print "-H, --host= hostname  Default to localhost"
+    print "-u, --user= username  Default to current userid"
     sys.exit(1)
+
 
 def main():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hH:", ["help", "host="])
+        opts, args = getopt.getopt(sys.argv[1:], "hH:u:", ["help", "host=", "user="])
     except getopt.GetoptError as err:
         print str(err)
         usage()
 
-
+    username=getpass.getuser()
     host="localhost"
 
     for opt, arg in opts:
-        if opt in ("-H", "--host"):
+        if opt in ("-u", "--user"):
+            username = arg
+        elif opt in ("-H", "--host"):
             host = arg
         else:
             usage()
-       
-    lpGetInfo(host) 
+
+    lpGetInfo(username, host) 
 
 if __name__ == '__main__':
     main()
